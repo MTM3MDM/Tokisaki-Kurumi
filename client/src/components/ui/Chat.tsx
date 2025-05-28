@@ -1,0 +1,1 @@
+const BOT_PROFILE_IMAGE_URL = '/KurumiTokisaka.jpg'; 
