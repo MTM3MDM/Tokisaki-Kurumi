@@ -1,61 +1,14 @@
 import express from 'express';
 import path from 'path';
-import dotenv from 'dotenv';
-import { Groq } from 'groq';
 
-dotenv.config();
+// 환경 변수는 Vercel에서 관리하므로 여기서 dotenv 로드 안 함
 
 const app = express();
-app.use(express.json());
+// app.use(express.json()); // API 처리는 chat.js에서 담당
 
-const apiKey = process.env.GROQ_API_KEY;
+// API 키 체크 로직 삭제 (Vercel에서 환경 변수 부재 시 빌드 실패)
 
-if (!apiKey) {
-  console.error("GROQ_API_KEY not found in environment variables");
-  process.exit(1); // API 키 없으면 서버 시작 안 함
-}
-
-const groq = new Groq({
-  apiKey: apiKey,
-});
-
-// API 라우트
-app.post('/api/chat', async (req, res) => {
-  try {
-    const { messages } = req.body;
-    
-    if (!messages || !Array.isArray(messages) || messages.length === 0) {
-      console.warn('Received empty or invalid messages array', messages);
-      return res.status(400).json({ error: '유효한 메시지 기록이 없습니다.' });
-    }
-
-    console.log(`Received message for chat completion.`);
-
-    const messagesWithPersona = [
-        { role: 'system', content: 'You are Tokisaki Kurumi, a helpful and friendly AI companion. You should respond as Tokisaki Kurumi.' },
-        ...messages
-    ];
-
-    const completion = await groq.chat.completions.create({
-      messages: messagesWithPersona,
-      model: 'mixtral-8x7b-32768',
-      temperature: 0.7,
-      max_tokens: 1024,
-    });
-
-    const response = completion.choices[0]?.message?.content || '응답을 생성할 수 없습니다.';
-    console.log(`Sent response.`);
-
-    res.status(200).json({ response });
-  } catch (error) {
-    console.error('Error processing chat message:', error);
-    if (error instanceof Error) {
-        res.status(500).json({ error: `서버 오류: ${error.message}` });
-    } else {
-        res.status(500).json({ error: '알 수 없는 서버 오류가 발생했습니다.' });
-    }
-  }
-});
+// Groq 인스턴스 생성 및 API 라우트 삭제 (chat.js로 이동)
 
 // 클라이언트 정적 파일 서빙 (클라이언트 빌드 후 dist 폴더 생성)
 const FE_BUILD_PATH = path.join(__dirname, 'dist');
@@ -66,8 +19,9 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(FE_BUILD_PATH, 'index.html'));
 });
 
+// 로컬 실행을 위한 포트 설정 (Vercel에서는 사용되지 않음)
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
-  console.log(`Groq API Key loaded: ${apiKey ? 'Yes' : 'No'}`);
+  // console.log(`Groq API Key loaded: ${process.env.GROQ_API_KEY ? 'Yes' : 'No'}`); // 로컬 실행 시 필요하면 주석 해제
 }); 
