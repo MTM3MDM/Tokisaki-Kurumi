@@ -1,7 +1,7 @@
 {
   "functions": {
     "api/**/*.js": {
-      "runtime": "node JAVASCRIPT_LATEST"
+      "runtime": "node18.x"
     }
   }
 } 
